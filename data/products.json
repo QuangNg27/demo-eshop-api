@@ -1,0 +1,9 @@
+[
+  { "id": 1, "name": "Laptop", "price": 999.99, "stock": 10, "category": "electronics" },
+  { "id": 2, "name": "Mouse", "price": 29.99, "stock": 50, "category": "electronics" },
+  { "id": 3, "name": "Keyboard", "price": 79.99, "stock": 30, "category": "electronics" },
+  { "id": 4, "name": "Notebook", "price": 5.99, "stock": 100, "category": "stationery" },
+  { "id": 5, "name": "Pen", "price": 1.99, "stock": 200, "category": "stationery" },
+  { "id": 6, "name": "Monitor", "price": 349.99, "stock": 15, "category": "electronics" },
+  { "id": 7, "name": "USB Hub", "price": 24.99, "stock": 40, "category": "electronics" }
+]

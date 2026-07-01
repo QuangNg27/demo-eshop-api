@@ -1,0 +1,5 @@
+[
+  { "code": "SAVE20", "discount_percent": 20, "expiry_date": "2026-12-31", "redeemed_by": [] },
+  { "code": "HALF", "discount_percent": 50, "expiry_date": "2026-12-31", "redeemed_by": [] },
+  { "code": "EXPIRED10", "discount_percent": 10, "expiry_date": "2024-01-01", "redeemed_by": [] }
+]

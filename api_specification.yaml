@@ -1,0 +1,438 @@
+openapi: 3.0.3
+info:
+  title: EShop Demo API
+  description: |
+    Minimal EShop REST API built with Node.js/Express for Postman testing activity.
+    All data is stored in-memory or JSON files. Server restart resets cart and orders.
+    
+    **JWT Secret (demo only):** `demo-secret-key`
+    **Base URL:** http://localhost:3000
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Products
+    description: Product catalog
+  - name: Cart
+    description: Shopping cart management
+  - name: Orders
+    description: Order placement
+  - name: Coupons
+    description: Coupon redemption
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: alice
+        password:
+          type: string
+          example: password123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            username:
+              type: string
+              example: alice
+            email:
+              type: string
+              example: alice@test.com
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Laptop
+        price:
+          type: number
+          format: float
+          example: 999.99
+        stock:
+          type: integer
+          example: 10
+        category:
+          type: string
+          example: electronics
+
+    CartItem:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Laptop
+        price:
+          type: number
+          example: 999.99
+        quantity:
+          type: integer
+          example: 2
+
+    Order:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        total:
+          type: number
+          example: 1999.98
+        discount:
+          type: number
+          example: 399.996
+        coupon_applied:
+          type: string
+          nullable: true
+          example: SAVE20
+        final_total:
+          type: number
+          example: 1599.98
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid credentials
+
+  /api/products:
+    get:
+      tags: [Products]
+      summary: Get all products
+      responses:
+        '200':
+          description: List of all products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  /api/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cart:
+    post:
+      tags: [Cart]
+      summary: Add item to cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, product_id, quantity]
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                product_id:
+                  type: integer
+                  example: 1
+                quantity:
+                  type: integer
+                  example: 2
+      responses:
+        '201':
+          description: Item added to cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  cart:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CartItem'
+        '400':
+          description: Invalid input or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cart/{user_id}:
+    get:
+      tags: [Cart]
+      summary: Get cart for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: User cart with total
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CartItem'
+                  total:
+                    type: number
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/orders:
+    post:
+      tags: [Orders]
+      summary: Create order from cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                coupon_code:
+                  type: string
+                  example: SAVE20
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Empty cart, insufficient stock, or invalid coupon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Coupon already redeemed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Orders]
+      summary: Get all orders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/coupon/redeem:
+    post:
+      tags: [Coupons]
+      summary: Redeem a coupon code
+      description: |
+        Validates and applies a coupon for a user. Validation rules:
+        - Coupon code must exist → 400 if not found
+        - Coupon must not be expired (`expiry_date > today`) → 400 if expired
+        - User must not have already redeemed this coupon → 409 if already used
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [coupon_code, user_id]
+              properties:
+                coupon_code:
+                  type: string
+                  example: SAVE20
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Coupon redeemed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  discount_percent:
+                    type: integer
+                    example: 20
+                  message:
+                    type: string
+                    example: "Coupon SAVE20 applied successfully. You get 20% off!"
+        '400':
+          description: Coupon not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                not_found:
+                  summary: Coupon not found
+                  value:
+                    error: Coupon not found
+                expired:
+                  summary: Coupon expired
+                  value:
+                    error: Coupon has expired
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Coupon already redeemed by this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Coupon already redeemed by this user
