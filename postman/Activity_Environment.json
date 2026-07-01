@@ -1,0 +1,46 @@
+{
+	"id": "e1d5c32f-a1f6-4101-a5a4-bbe76f1d71c2",
+	"name": "EShop Env",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "username",
+			"value": "alice",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "password",
+			"value": "password123",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "user_id",
+			"value": "1",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "coupon_code",
+			"value": "SAVE20",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-07-01T09:12:09.228Z",
+	"_postman_exported_using": "Postman/12.17.2"
+}
